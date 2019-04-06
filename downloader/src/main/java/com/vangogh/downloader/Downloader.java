@@ -92,9 +92,12 @@ public class Downloader extends Thread {
         return bArray;
     }
 
+    /**
+     * Encoded url would be either used as downloader and cached data key
+     */
     public interface ResultCallback {
-        void onStarted(Downloader downloader, String downloaderId);
-        void onFinished(byte[] data, String downloaderId);
+        void onStarted(Downloader downloader, String encodedUrl);
+        void onFinished(byte[] data, String encodedUrl);
         void onFailed(IOException e);
     }
 }

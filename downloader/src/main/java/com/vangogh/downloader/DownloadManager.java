@@ -2,6 +2,7 @@ package com.vangogh.downloader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -25,4 +26,26 @@ public abstract class DownloadManager {
     public abstract void download(String url, Downloader.ResultCallback result);
 
     public abstract void cancel();
+
+    protected void cacheByteData(String key, byte[] data) {
+        if(getTotalCachedDataSize() <= maxTotalBytes) {
+            cachedData.put(key, data);
+        }
+    }
+
+    private int getTotalCachedDataSize() {
+        int size = 0;
+
+        if (cachedData != null) {
+            for (Map.Entry<String, byte[]> entry : cachedData.entrySet()) {
+                byte[] data = entry.getValue();
+
+                for(int i=0; i<data.length; i++) {
+                    size += data[i];
+                }
+            }
+        }
+
+        return size;
+    }
 }

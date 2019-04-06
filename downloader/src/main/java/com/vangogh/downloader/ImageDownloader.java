@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.vangogh.downloader.utilities.ImageUtils;
 import com.vangogh.downloader.utilities.StringUtils;
 
 import java.io.IOException;
@@ -33,14 +34,18 @@ public class ImageDownloader extends DownloadManager {
     public void download(String url, Downloader.ResultCallback result) {
 
         if (downloaders.size() < DEFAULT_MAX_THREAD) {
-            String downloaderId = StringUtils.toMD5(url);
-            if (downloaders.get(downloaderId) == null) {
+            String encodedUrl = StringUtils.toMD5(url);
+            if (downloaders.get(encodedUrl) == null) {
                 downloader = new Downloader(url, result);
                 downloader.start();
-                downloaders.put(downloaderId, downloader);
+                downloaders.put(encodedUrl, downloader);
             }
         }
         else {
+            /**
+             * TODO :
+             * Do something for worker in queue which about to be executed
+             */
             Log.i(ImageDownloader.class.getSimpleName(), "Thread capacity already full... Inserted to queue");
             downloaderQueue.addFirst(new Downloader(url, result));
         }
@@ -55,29 +60,41 @@ public class ImageDownloader extends DownloadManager {
 
         download(url, new Downloader.ResultCallback() {
             @Override
-            public void onStarted(Downloader downloader, String downloaderId) {
+            public void onStarted(Downloader downloader, final String encodedUrl) {
                 // TODO : Do something before download finished
-                Log.d(ImageDownloader.class.getSimpleName(), downloaderId+" starting to download image from: "+downloader.getUrl());
+                Log.d(ImageDownloader.class.getSimpleName(), encodedUrl+" starting to download image from: "+downloader.getUrl());
+
+                // Read from cache if exist
+                if (cachedData.get(encodedUrl) != null) {
+                    handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            byte[] data = cachedData.get(encodedUrl);
+                            ImageUtils.setImage(data, view);
+                        }
+                    });
+                }
             }
 
             @Override
-            public void onFinished(final byte[] data, final String downloaderId) {
+            public void onFinished(final byte[] data, final String encodedUrl) {
                 handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
-                        view.setImageBitmap(Bitmap.createScaledBitmap(
-                                bmp,
-                                view.getWidth(),
-                                view.getHeight(),
-                                false)
-                        );
+                        // Re-render with the newest one
+                        ImageUtils.setImage(data, view);
 
-                        if (downloaders.get(downloaderId) != null) {
-                            downloaders.remove(downloaderId);
+                        // Cache data if this byte never been cached
+                        if (cachedData.get(encodedUrl) == null) {
+                            cacheByteData(encodedUrl, data);
+                        }
 
-                            Log.d(ImageDownloader.class.getSimpleName(), "Removing "+downloaderId+" from worker pool");
+                        if (downloaders.get(encodedUrl) != null) {
+                            downloaders.remove(encodedUrl);
+
+                            Log.d(ImageDownloader.class.getSimpleName(), "Removing "+encodedUrl+" from worker pool");
                         }
                     }
                 });
