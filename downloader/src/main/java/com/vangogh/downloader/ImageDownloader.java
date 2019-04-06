@@ -1,15 +1,12 @@
 package com.vangogh.downloader;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageView;
 
 import com.vangogh.downloader.utilities.ImageUtils;
-import com.vangogh.downloader.utilities.StringUtils;
 
 import java.io.IOException;
 
