@@ -1,5 +1,7 @@
 package com.vangogh.downloader;
 
+import com.vangogh.downloader.utilities.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,34 @@ public abstract class DownloadManager {
     protected void cacheByteData(String key, byte[] data) {
         if(getTotalCachedDataSize() <= maxTotalBytes) {
             cachedData.put(key, data);
+        }
+    }
+
+    /**
+     * check if downloader map reached its max limit.
+     * put downloader to the queue if downloader list exceed its max thread limit.
+     * remove downloader from list whenever its about to be executed
+     * if downloaderQueue size > 0, then pop from the queue, add into downloader list
+     * @param downloader
+     */
+    protected void manageDownloader(Downloader downloader) {
+        String encodedUrl = StringUtils.toMD5(downloader.getUrl());
+
+        if (downloaders.size() >= maxThread) {
+            downloaderQueue.add(downloader);
+        }
+        else {
+            downloaders.put(encodedUrl, downloader);
+        }
+
+        if (downloaders.size() > 0){
+            Downloader worker = downloaders.remove(encodedUrl);
+            worker.start();
+
+            if (downloaderQueue.size() > 0) {
+                Downloader fromQueue = downloaderQueue.pop();
+                downloaders.put(encodedUrl, fromQueue);
+            }
         }
     }
 

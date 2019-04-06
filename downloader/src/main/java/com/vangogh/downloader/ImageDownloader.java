@@ -33,22 +33,9 @@ public class ImageDownloader extends DownloadManager {
     @Override
     public void download(String url, Downloader.ResultCallback result) {
 
-        if (downloaders.size() < DEFAULT_MAX_THREAD) {
-            String encodedUrl = StringUtils.toMD5(url);
-            if (downloaders.get(encodedUrl) == null) {
-                downloader = new Downloader(url, result);
-                downloader.start();
-                downloaders.put(encodedUrl, downloader);
-            }
-        }
-        else {
-            /**
-             * TODO :
-             * Do something for worker in queue which about to be executed
-             */
-            Log.i(ImageDownloader.class.getSimpleName(), "Thread capacity already full... Inserted to queue");
-            downloaderQueue.addFirst(new Downloader(url, result));
-        }
+        Downloader downloader = new Downloader(url, result);
+
+        manageDownloader(downloader);
     }
 
     @Override
