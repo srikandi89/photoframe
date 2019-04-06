@@ -13,7 +13,6 @@ import java.io.IOException;
 public class ImageDownloader extends DownloadManager {
     private Downloader downloader;
     private String sourceUrl;
-    private Context context;
     private Handler handler;
     private static final int BYTE_SIZE = 1024;
     private static final int DEFAULT_MAX_THREAD = 10;
@@ -29,15 +28,11 @@ public class ImageDownloader extends DownloadManager {
 
     @Override
     public void download(String url, Downloader.ResultCallback result) {
+        this.sourceUrl = url;
 
         Downloader downloader = new Downloader(url, result);
 
         manageDownloader(downloader);
-    }
-
-    @Override
-    public void cancel() {
-        downloader.cancel();
     }
 
     public void toImageView(String url, final ImageView view) {

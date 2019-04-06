@@ -25,7 +25,13 @@ public abstract class DownloadManager {
 
     public abstract void download(String url, Downloader.ResultCallback result);
 
-    public abstract void cancel();
+    public void cancel(String url) {
+        String encodedUrl = StringUtils.toMD5(url);
+        if (downloaders.get(encodedUrl) != null) {
+            Downloader downloader = downloaders.get(encodedUrl);
+            downloader.cancel();
+        }
+    }
 
     protected void cacheByteData(String key, byte[] data) {
         if(getTotalCachedDataSize() <= maxTotalBytes) {
