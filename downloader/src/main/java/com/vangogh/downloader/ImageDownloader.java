@@ -8,6 +8,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.vangogh.downloader.utilities.StringUtils;
+
 import java.io.IOException;
 
 public class ImageDownloader extends DownloadManager {
@@ -31,13 +33,16 @@ public class ImageDownloader extends DownloadManager {
     public void download(String url, Downloader.ResultCallback result) {
 
         if (downloaders.size() < DEFAULT_MAX_THREAD) {
-            int currThreadIndex = downloaders.size();
-            downloader = new Downloader(url, currThreadIndex, result);
-            downloader.start();
-            downloaders.add(downloader);
+            String downloaderId = StringUtils.toMD5(url);
+            if (downloaders.get(downloaderId) == null) {
+                downloader = new Downloader(url, result);
+                downloader.start();
+                downloaders.put(downloaderId, downloader);
+            }
         }
         else {
             Log.i(ImageDownloader.class.getSimpleName(), "Thread capacity already full... Inserted to queue");
+            downloaderQueue.addFirst(new Downloader(url, result));
         }
     }
 
@@ -50,7 +55,13 @@ public class ImageDownloader extends DownloadManager {
 
         download(url, new Downloader.ResultCallback() {
             @Override
-            public void onFinished(final byte[] data, final int downloaderIndex) {
+            public void onStarted(Downloader downloader, String downloaderId) {
+                // TODO : Do something before download finished
+                Log.d(ImageDownloader.class.getSimpleName(), downloaderId+" starting to download image from: "+downloader.getUrl());
+            }
+
+            @Override
+            public void onFinished(final byte[] data, final String downloaderId) {
                 handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
@@ -63,7 +74,11 @@ public class ImageDownloader extends DownloadManager {
                                 false)
                         );
 
-                        downloaders.remove(downloaderIndex);
+                        if (downloaders.get(downloaderId) != null) {
+                            downloaders.remove(downloaderId);
+
+                            Log.d(ImageDownloader.class.getSimpleName(), "Removing "+downloaderId+" from worker pool");
+                        }
                     }
                 });
             }

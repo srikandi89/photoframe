@@ -1,5 +1,7 @@
 package com.vangogh.downloader;
 
+import com.vangogh.downloader.utilities.StringUtils;
+
 import java.io.*;
 import java.net.URL;
 
@@ -7,13 +9,11 @@ public class Downloader extends Thread {
     private String url;
     private boolean running;
     private ResultCallback callback;
-    private int downloaderIndex;
 
     private static final int BUFFER_SIZE = 1024;
 
-    public Downloader(String url, int downloaderIndex, ResultCallback callback) {
+    public Downloader(String url, ResultCallback callback) {
         this.url = url;
-        this.downloaderIndex = downloaderIndex;
         this.callback = callback;
         this.running = true;
     }
@@ -25,19 +25,24 @@ public class Downloader extends Thread {
         download(callback);
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     /**
      * Download the file by from specified target URL
      * Given ResultCallback as the parameter to retrieve the result asynchronously
      * @param callback
      */
     private void download(ResultCallback callback) {
+        callback.onStarted(Downloader.this, StringUtils.toMD5(url));
+
         try {
             BufferedInputStream inputStream = new BufferedInputStream(new URL(url).openStream());
 
             // Change downloaded file to the preferred location
             byte[] buffer = new byte[BUFFER_SIZE];
             int bytesRead;
-
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
@@ -49,7 +54,7 @@ public class Downloader extends Thread {
 
             byte[] data = bos.toByteArray();
 
-            callback.onFinished(data, downloaderIndex);
+            callback.onFinished(data, StringUtils.toMD5(url));
 
             inputStream.close();
             bos.close();
@@ -88,7 +93,8 @@ public class Downloader extends Thread {
     }
 
     public interface ResultCallback {
-        void onFinished(byte[] data, int downloaderIndex);
+        void onStarted(Downloader downloader, String downloaderId);
+        void onFinished(byte[] data, String downloaderId);
         void onFailed(IOException e);
     }
 }
