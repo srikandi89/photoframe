@@ -7,11 +7,13 @@ public class Downloader extends Thread {
     private String url;
     private boolean running;
     private ResultCallback callback;
+    private int downloaderIndex;
 
     private static final int BUFFER_SIZE = 1024;
 
-    public Downloader(String url, ResultCallback callback) {
+    public Downloader(String url, int downloaderIndex, ResultCallback callback) {
         this.url = url;
+        this.downloaderIndex = downloaderIndex;
         this.callback = callback;
         this.running = true;
     }
@@ -47,7 +49,7 @@ public class Downloader extends Thread {
 
             byte[] data = bos.toByteArray();
 
-            callback.onFinished(data);
+            callback.onFinished(data, downloaderIndex);
 
             inputStream.close();
             bos.close();
@@ -86,7 +88,7 @@ public class Downloader extends Thread {
     }
 
     public interface ResultCallback {
-        void onFinished(byte[] data);
+        void onFinished(byte[] data, int downloaderIndex);
         void onFailed(IOException e);
     }
 }

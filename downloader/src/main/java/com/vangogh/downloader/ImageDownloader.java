@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -17,11 +16,11 @@ public class ImageDownloader extends DownloadManager {
     private Context context;
     private Handler handler;
     private static final int BYTE_SIZE = 1024;
-    private static final int MAX_THREAD = 10;
-    private static final int MAX_TOTAL_BYTE = 500*BYTE_SIZE;
+    private static final int DEFAULT_MAX_THREAD = 10;
+    private static final int DEFAULT_MAX_TOTAL_BYTE = 500*BYTE_SIZE;
 
     public ImageDownloader() {
-        super(MAX_THREAD, MAX_TOTAL_BYTE);
+        super(DEFAULT_MAX_THREAD, DEFAULT_MAX_TOTAL_BYTE);
     }
 
     public ImageDownloader(int maxThread, int maxTotalBytes) {
@@ -30,8 +29,16 @@ public class ImageDownloader extends DownloadManager {
 
     @Override
     public void download(String url, Downloader.ResultCallback result) {
-        downloader = new Downloader(url, result);
-        downloader.start();
+
+        if (downloaders.size() < DEFAULT_MAX_THREAD) {
+            int currThreadIndex = downloaders.size();
+            downloader = new Downloader(url, currThreadIndex, result);
+            downloader.start();
+            downloaders.add(downloader);
+        }
+        else {
+            Log.i(ImageDownloader.class.getSimpleName(), "Thread capacity already full... Inserted to queue");
+        }
     }
 
     @Override
@@ -43,7 +50,7 @@ public class ImageDownloader extends DownloadManager {
 
         download(url, new Downloader.ResultCallback() {
             @Override
-            public void onFinished(final byte[] data) {
+            public void onFinished(final byte[] data, final int downloaderIndex) {
                 handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
@@ -55,14 +62,24 @@ public class ImageDownloader extends DownloadManager {
                                 view.getHeight(),
                                 false)
                         );
+
+                        downloaders.remove(downloaderIndex);
                     }
                 });
             }
 
             @Override
             public void onFailed(IOException e) {
-                Log.d("GOGH_DOWNLOADER", e.getMessage());
+                Log.d(ImageDownloader.class.getSimpleName(), e.getMessage());
             }
         });
+    }
+
+    public int getMaxThread() {
+        return this.maxThread;
+    }
+
+    public int getMaxTotalBytes() {
+        return this.maxTotalBytes;
     }
 }
