@@ -1,5 +1,6 @@
 package com.vangogh.downloader;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,10 +40,17 @@ public class DocumentDownloader extends DownloadManager {
             @Override
             public void onFinished(byte[] data, String encodedUrl) {
                 String rawResponse = new String(data);
-                try {
-                    JSONObject jsonResponse = new JSONObject(rawResponse);
 
-                    response.onSuccess(rawResponse, jsonResponse);
+                try {
+                    if (rawResponse.startsWith("[")) {
+                        JSONArray jsonArray = new JSONArray(rawResponse);
+                        response.onSuccess(rawResponse, jsonArray);
+                    }
+                    else {
+                        JSONObject jsonObject = new JSONObject(rawResponse);
+                        response.onSuccess(rawResponse, jsonObject);
+                    }
+
                 } catch (JSONException e) {
                     response.onFailed(e);
                 }
@@ -55,9 +63,9 @@ public class DocumentDownloader extends DownloadManager {
         });
     }
 
-    public interface DocumentResponse {
+    public interface DocumentResponse<T> {
         void onStart();
-        void onSuccess(String raw, JSONObject jsonObject);
+        void onSuccess(String raw, T response);
         void onFailed(Exception e);
     }
 }
