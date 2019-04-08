@@ -65,7 +65,10 @@ public class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.MyVi
         return contents != null ? contents.size() : 0;
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * Use static to keep each of items will displayed consistently
+     */
+    static class MyViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView imageView;
         public Button cancelBtn;

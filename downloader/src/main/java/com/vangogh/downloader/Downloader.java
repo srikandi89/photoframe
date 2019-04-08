@@ -51,7 +51,7 @@ public class Downloader extends Thread {
             while ((bytesRead = inputStream.read(buffer, 0, BUFFER_SIZE)) != -1 && running) {
                 bos.write(buffer, 0, bytesRead);
                 Log.d(Downloader.class.getSimpleName(), "Is Running ? "+running);
-                Thread.sleep(10);
+
             }
 
             byte[] data = bos.toByteArray();
@@ -68,8 +68,6 @@ public class Downloader extends Thread {
         }
         catch (IOException e) {
             callback.onFailed(e);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 

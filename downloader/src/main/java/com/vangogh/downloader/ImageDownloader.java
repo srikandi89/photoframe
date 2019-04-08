@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import com.vangogh.downloader.utilities.ImageUtils;
+import com.vangogh.downloader.utilities.StringUtils;
 
 import java.io.IOException;
 
@@ -44,7 +45,8 @@ public class ImageDownloader extends DownloadManager {
             @Override
             public void onStarted(Downloader downloader, final String encodedUrl) {
                 // TODO : Do something before download finished
-                Log.d(ImageDownloader.class.getSimpleName(), encodedUrl+" starting to download image from: "+downloader.getUrl());
+                boolean equal = StringUtils.toMD5(downloader.getUrl()).equals(encodedUrl);
+                Log.d(ImageDownloader.class.getSimpleName(), encodedUrl+" starting to download image from: "+downloader.getUrl()+", "+equal);
 
                 // Read from cache if exist
                 if (cachedData.get(encodedUrl) != null) {
