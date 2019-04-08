@@ -14,13 +14,20 @@ public class ImageDownloader extends DownloadManager {
     private static final int BYTE_SIZE = 1024;
     private static final int DEFAULT_MAX_THREAD = 10;
     private static final int DEFAULT_MAX_TOTAL_BYTE = 500*BYTE_SIZE;
+    private static final long SECOND = 1000;
+    private static final long MINUTE = 60*SECOND;
+    private static final long LIFE_TIME_MILLIS = MINUTE;
 
     public ImageDownloader() {
         super(DEFAULT_MAX_THREAD, DEFAULT_MAX_TOTAL_BYTE);
+        invalidator.setLifeTimeMillis(LIFE_TIME_MILLIS);
+        invalidator.start();
     }
 
     public ImageDownloader(int maxThread, int maxTotalBytes) {
         super(maxThread, maxTotalBytes);
+        invalidator.setLifeTimeMillis(LIFE_TIME_MILLIS);
+        invalidator.start();
     }
 
     @Override

@@ -14,11 +14,21 @@ public class Invalidator extends Thread {
     private static final long LIFE_TIME_MILLIS = MINUTE;
 
     private boolean running;
+    private long lifeTimeMillis;
     private DownloadManager manager;
 
     public Invalidator(DownloadManager manager) {
         this.manager = manager;
         this.running = true;
+        this.lifeTimeMillis = LIFE_TIME_MILLIS;
+    }
+
+    public long getLifeTimeMillis() {
+        return lifeTimeMillis;
+    }
+
+    public void setLifeTimeMillis(long lifeTimeMillis) {
+        this.lifeTimeMillis = lifeTimeMillis;
     }
 
     @Override
@@ -28,7 +38,7 @@ public class Invalidator extends Thread {
         try {
             while (running) {
                 invalidate(manager);
-                Thread.sleep(MINUTE);
+                Thread.sleep(lifeTimeMillis);
             }
         }
         catch (Exception e) {
@@ -42,6 +52,8 @@ public class Invalidator extends Thread {
 
     private void invalidate(DownloadManager manager) {
         ConcurrentHashMap<String, Date> timeCached = manager.getTimeCachedData();
+
+        Log.d(Invalidator.class.getSimpleName(), "Invalidator lifetime :"+lifeTimeMillis);
 
         for (Map.Entry<String, Date> entry : timeCached.entrySet()) {
             Date date = entry.getValue();

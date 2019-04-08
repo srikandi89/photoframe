@@ -34,7 +34,6 @@ public abstract class DownloadManager {
         downloaders = new ConcurrentHashMap<>();
         downloaderQueue = new LinkedBlockingDeque<>();
         invalidator = new Invalidator(this);
-        invalidator.start();
     }
 
     public abstract void download(String url, Downloader.ResultCallback result);
