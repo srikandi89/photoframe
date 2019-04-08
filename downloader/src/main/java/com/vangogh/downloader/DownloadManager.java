@@ -2,6 +2,7 @@ package com.vangogh.downloader;
 
 import com.vangogh.downloader.utilities.StringUtils;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -13,14 +14,27 @@ public abstract class DownloadManager {
     // Considered as priority-based, so this collection will use list-based collection (thread safe)
     protected LinkedBlockingDeque<Downloader> downloaderQueue;
     protected ConcurrentHashMap<String, byte[]> cachedData;
+    protected ConcurrentHashMap<String, Date> timeCachedData;
     protected ConcurrentHashMap<String, Downloader> downloaders;
+    protected Invalidator invalidator;
+
+    public ConcurrentHashMap<String, byte[]> getCachedData() {
+        return cachedData;
+    }
+
+    public ConcurrentHashMap<String, Date> getTimeCachedData() {
+        return timeCachedData;
+    }
 
     public DownloadManager(int maxThread, int maxTotalBytes) {
         this.maxThread = maxThread;
         this.maxTotalBytes = maxTotalBytes;
         cachedData = new ConcurrentHashMap<>();
+        timeCachedData = new ConcurrentHashMap<>();
         downloaders = new ConcurrentHashMap<>();
         downloaderQueue = new LinkedBlockingDeque<>();
+        invalidator = new Invalidator(this);
+        invalidator.start();
     }
 
     public abstract void download(String url, Downloader.ResultCallback result);
@@ -36,6 +50,7 @@ public abstract class DownloadManager {
     protected void cacheByteData(String key, byte[] data) {
         if(getTotalCachedDataSize() <= maxTotalBytes) {
             cachedData.put(key, data);
+            timeCachedData.put(key, new Date());
         }
     }
 
