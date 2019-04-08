@@ -1,5 +1,7 @@
 package com.vangogh.downloader;
 
+import android.util.Log;
+
 import com.vangogh.downloader.utilities.StringUtils;
 
 import java.util.Date;
@@ -40,7 +42,9 @@ public abstract class DownloadManager {
 
     public void cancel(String url) {
         String encodedUrl = StringUtils.toMD5(url);
+        Log.d(DownloadManager.class.getSimpleName(), "Downloader for "+encodedUrl+" is null ? "+(downloaders.get(encodedUrl) == null));
         if (downloaders.get(encodedUrl) != null) {
+            Log.d(DownloadManager.class.getSimpleName(), "Downloader Stopped");
             Downloader downloader = downloaders.get(encodedUrl);
             downloader.cancel();
         }
@@ -70,14 +74,9 @@ public abstract class DownloadManager {
             downloaders.put(encodedUrl, downloader);
         }
 
-        if (downloaders.size() > 0){
-            Downloader worker = downloaders.remove(encodedUrl);
+        if (downloaders.get(encodedUrl) != null){
+            Downloader worker = downloaders.get(encodedUrl);
             worker.start();
-
-            if (downloaderQueue.size() > 0) {
-                Downloader fromQueue = downloaderQueue.pop();
-                downloaders.put(encodedUrl, fromQueue);
-            }
         }
     }
 

@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.vangogh.downloader.AsyncImageDownloader;
@@ -34,11 +35,29 @@ public class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.MyVi
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int i) {
-        ImageContent content = contents.get(i);
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, int i) {
+        final ImageContent content = contents.get(i);
         Log.d(ImageListAdapter.class.getSimpleName(), "IMAGE #"+i);
 
         imageDownloader.toImageView(content.getUrl(), holder.imageView);
+
+        holder.cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (holder.cancelBtn.getText().toString().toLowerCase().equals("cancel")) {
+                    Log.d(ImageListAdapter.class.getSimpleName(), "Download Image from "+content.getUrl()+" about to stop");
+
+                    imageDownloader.cancel(content.getUrl());
+
+                    holder.cancelBtn.setText("Restart");
+                }
+                else if (holder.cancelBtn.getText().toString().toLowerCase().equals("restart")) {
+                    Log.d(ImageListAdapter.class.getSimpleName(), "Download image from "+content.getUrl()+" about to started");
+                    imageDownloader.toImageView(content.getUrl(), holder.imageView);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -49,11 +68,13 @@ public class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.MyVi
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView imageView;
+        public Button cancelBtn;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
             imageView = itemView.findViewById(R.id.imageView);
+            cancelBtn = itemView.findViewById(R.id.btn_cancel);
         }
     }
 }

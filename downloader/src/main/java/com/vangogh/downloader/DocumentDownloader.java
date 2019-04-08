@@ -60,6 +60,11 @@ public class DocumentDownloader extends DownloadManager {
             public void onFailed(IOException e) {
                 response.onFailed(e);
             }
+
+            @Override
+            public void onStopped(String encodedUrl) {
+
+            }
         });
     }
 

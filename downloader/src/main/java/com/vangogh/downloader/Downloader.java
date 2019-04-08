@@ -1,5 +1,7 @@
 package com.vangogh.downloader;
 
+import android.util.Log;
+
 import com.vangogh.downloader.utilities.StringUtils;
 
 import java.io.*;
@@ -7,7 +9,7 @@ import java.net.URL;
 
 public class Downloader extends Thread {
     private String url;
-    private boolean running;
+    private Boolean running;
     private ResultCallback callback;
 
     private static final int BUFFER_SIZE = 1024;
@@ -48,19 +50,26 @@ public class Downloader extends Thread {
 
             while ((bytesRead = inputStream.read(buffer, 0, BUFFER_SIZE)) != -1 && running) {
                 bos.write(buffer, 0, bytesRead);
+                Log.d(Downloader.class.getSimpleName(), "Is Running ? "+running);
+                Thread.sleep(10);
             }
-
-            running = false;
 
             byte[] data = bos.toByteArray();
 
-            callback.onFinished(data, StringUtils.toMD5(url));
+            if (running) {
+                callback.onFinished(data, StringUtils.toMD5(url));
+            }
+            else {
+                callback.onStopped(StringUtils.toMD5(url));
+            }
 
             inputStream.close();
             bos.close();
         }
         catch (IOException e) {
             callback.onFailed(e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -68,7 +77,7 @@ public class Downloader extends Thread {
      * Stop the loop and intercept the thread
      */
     public void cancel() {
-        running = false;
+        this.running = false;
     }
 
     /**
@@ -99,5 +108,6 @@ public class Downloader extends Thread {
         void onStarted(Downloader downloader, String encodedUrl);
         void onFinished(byte[] data, String encodedUrl);
         void onFailed(IOException e);
+        void onStopped(String encodedUrl);
     }
 }

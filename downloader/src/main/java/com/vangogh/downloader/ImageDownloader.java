@@ -78,6 +78,11 @@ public class ImageDownloader extends DownloadManager {
 
                             Log.d(ImageDownloader.class.getSimpleName(), "Removing "+encodedUrl+" from worker pool");
                         }
+
+                        if (downloaderQueue.size() > 0) {
+                            Downloader fromQueue = downloaderQueue.pop();
+                            downloaders.put(encodedUrl, fromQueue);
+                        }
                     }
                 });
             }
@@ -85,6 +90,11 @@ public class ImageDownloader extends DownloadManager {
             @Override
             public void onFailed(IOException e) {
                 Log.d(ImageDownloader.class.getSimpleName(), e.getMessage());
+            }
+
+            @Override
+            public void onStopped(String encodedUrl) {
+                Log.d(ImageDownloader.class.getSimpleName(), "Thread "+encodedUrl+" just stopped :D");
             }
         });
     }
