@@ -4,10 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.vangogh.downloader.AsyncImageDownloader;
 import com.vangogh.downloader.ImageDownloader;
 import com.vangogh.photoframe.models.ImageContent;
 

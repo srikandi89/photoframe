@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.vangogh.downloader.AsyncImageDownloader;
 import com.vangogh.downloader.ImageDownloader;
 import com.vangogh.photoframe.models.ImageContent;
 
